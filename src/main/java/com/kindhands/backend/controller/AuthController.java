@@ -5,6 +5,7 @@ import com.kindhands.backend.entity.OrganizationStatus;
 import com.kindhands.backend.entity.User;
 import com.kindhands.backend.repository.OrganizationRepository;
 import com.kindhands.backend.repository.UserRepository;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,22 +29,22 @@ public class AuthController {
     // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message","Email already registered"));
-        }
-        if (user.getRole() == null) user.setRole("DONOR");
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("message","Registration successful"));
-    }
-       /* userRepository.save(user); // 🔥 VERY IMPORTANT
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "message", "Registration successful",
-                        "status", "SUCCESS"
-                )
-        );
-    }*/
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Email already registered"));
+        }
+
+        // 🔥 DEFAULT ROLE
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("DONOR");
+        }
+
+        userRepository.save(user);
+
+        // 🔥 IMPORTANT: return USER (frontend needs userId)
+        return ResponseEntity.ok(user);
+    }
 
     // ================= LOGIN =================
     @PostMapping("/login")
@@ -57,9 +58,13 @@ public class AuthController {
                     .body(Map.of("message", "Invalid password"));
         }
 
+        // 🔥 ORGANIZATION CHECK
         if ("ORGANIZATION".equalsIgnoreCase(user.getRole())) {
-            Organization org = organizationRepository.findByUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("Organization profile not found"));
+
+            Organization org = organizationRepository
+                    .findByUserId(user.getId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Organization profile not found"));
 
             if (org.getStatus() != OrganizationStatus.APPROVED) {
                 return ResponseEntity.status(403)

@@ -27,11 +27,8 @@ public class Organization {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    // getters & setters
+    // ===== getters & setters =====
     public Long getId() { return id; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -59,4 +56,7 @@ public class Organization {
 
     public OrganizationStatus getStatus() { return status; }
     public void setStatus(OrganizationStatus status) { this.status = status; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 }

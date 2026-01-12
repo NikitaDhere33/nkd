@@ -3,6 +3,7 @@ package com.kindhands.backend.controller;
 import com.kindhands.backend.entity.Organization;
 import com.kindhands.backend.entity.OrganizationStatus;
 import com.kindhands.backend.repository.OrganizationRepository;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
@@ -22,7 +23,6 @@ public class OrganizationController {
 
     private final OrganizationRepository repo;
 
-    // 🔥 FIXED + SAFE upload directory (project root/uploads/orgs)
     private static final String UPLOAD_DIR =
             System.getProperty("user.dir") + File.separator + "uploads" + File.separator + "orgs";
 
@@ -30,11 +30,8 @@ public class OrganizationController {
         this.repo = repo;
     }
 
-    // ================= REGISTER ORGANIZATION =================
-    @PostMapping(
-            value = "/register",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    // ================= REGISTER =================
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(
             @RequestParam String name,
             @RequestParam String email,
@@ -47,20 +44,18 @@ public class OrganizationController {
             @RequestParam("document") MultipartFile document
     ) {
         try {
-            // ✅ ensure directory exists
-            File dir = new File(UPLOAD_DIR);
-            if (!dir.exists()) {
-                dir.mkdirs();
+            if (repo.findByUserId(userId).isPresent()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Organization already registered"));
             }
 
-            // ✅ create safe filename
+            File dir = new File(UPLOAD_DIR);
+            if (!dir.exists()) dir.mkdirs();
+
             String fileName = System.currentTimeMillis() + "_" + document.getOriginalFilename();
             File dest = new File(dir, fileName);
-
-            // ✅ save file
             document.transferTo(dest);
 
-            // ✅ save org data
             Organization org = new Organization();
             org.setName(name);
             org.setEmail(email);
@@ -70,7 +65,7 @@ public class OrganizationController {
             org.setAddress(address);
             org.setPincode(pincode);
             org.setUserId(userId);
-            org.setDocumentPath(fileName); // 🔥 only filename
+            org.setDocumentPath(fileName);
             org.setStatus(OrganizationStatus.PENDING);
 
             repo.save(org);
@@ -83,13 +78,12 @@ public class OrganizationController {
                     .body("Registration Failed");
         }
     }
+
+    // ================= LOGIN =================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
 
-        String email = data.get("email");
-        String password = data.get("password");
-
-        Organization org = repo.findByEmail(email)
+        Organization org = repo.findByEmail(data.get("email"))
                 .orElse(null);
 
         if (org == null) {
@@ -97,7 +91,7 @@ public class OrganizationController {
                     .body("Organization not found");
         }
 
-        if (!org.getPassword().equals(password)) {
+        if (!org.getPassword().equals(data.get("password"))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid password");
         }
