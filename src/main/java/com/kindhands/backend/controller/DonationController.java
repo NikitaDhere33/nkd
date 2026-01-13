@@ -1,6 +1,6 @@
 package com.kindhands.backend.controller;
 
-import com.kindhands.backend.entity.Donation;
+import com.kindhands.backend.entity.Donate;
 import com.kindhands.backend.repository.DonationRepository;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +17,7 @@ public class DonationController {
 
     // Save donation form data
     @PostMapping("/save")
-    public Donation saveDonation(@RequestBody Donation donation) {
+    public Donate saveDonation(@RequestBody Donate donation) {
         return donationRepository.save(donation);
     }
 }

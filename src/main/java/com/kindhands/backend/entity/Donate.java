@@ -1,11 +1,12 @@
+
 package com.kindhands.backend.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+        import java.time.LocalDate;
 
 @Entity
 @Table(name = "donation")
-public class Donation {
+public class Donate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
