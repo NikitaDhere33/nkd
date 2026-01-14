@@ -1,17 +1,9 @@
 package com.kindhands.backend.repository;
 
 import com.kindhands.backend.entity.Request;
-import com.kindhands.backend.entity.RequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
+@Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-
-    List<Request> findByOrganizationId(Long organizationId);
-
-    List<Request> findByDonorId(Long donorId);
-
-
-    List<Request> findByStatus(RequestStatus requestStatus);
 }

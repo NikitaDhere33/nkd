@@ -1,9 +1,7 @@
 package com.kindhands.backend.entity;
 
 public enum RequestStatus {
-    OPEN,
+    SENT,
     ACCEPTED,
-    REJECTED,
-    DELIVERED,
-    COMPLETED
+    REJECTED
 }
