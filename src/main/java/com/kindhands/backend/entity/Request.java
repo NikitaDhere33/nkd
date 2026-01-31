@@ -10,22 +10,27 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String item;
+    // Organization info
+    private String organizationName;
+    private String organizationType; // orphanage / oldage / ngo
+    private String address;
+    private String pincode;
+    private String contactNumber;
+    private String email;
+
+    // Extra criteria
+    private Integer minAge;   // for oldage/orphanage (nullable)
+    private Integer maxAge;   // nullable
+
+    // Requirement info
+    private String itemType;  // food / clothes / books
     private Integer quantity;
 
-    @Enumerated(EnumType.STRING)
-    private RequestStatus status;
+    // Status for donor action
+    private String status; // PENDING / APPROVED / REJECTED
 
-    // getters & setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setStatus(String approved) {
+    }
 
-    public String getItem() { return item; }
-    public void setItem(String item) { this.item = item; }
-
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-
-    public RequestStatus getStatus() { return status; }
-    public void setStatus(RequestStatus status) { this.status = status; }
+    // getters setters
 }

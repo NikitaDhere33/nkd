@@ -2,7 +2,7 @@
 package com.kindhands.backend.entity;
 
 import jakarta.persistence.*;
-        import java.time.LocalDate;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "donation")

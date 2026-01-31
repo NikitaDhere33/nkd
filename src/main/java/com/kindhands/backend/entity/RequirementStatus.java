@@ -4,5 +4,6 @@ public enum RequirementStatus {
     OPEN,
     PENDING,
     APPROVED,
+    REJECTED,
     FULFILLED
 }

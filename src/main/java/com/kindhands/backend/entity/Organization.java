@@ -1,9 +1,16 @@
 package com.kindhands.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "organizations")
+@Table(
+        name = "organizations",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email"),
+                @UniqueConstraint(columnNames = "contact")
+        }
+)
 public class Organization {
 
     @Id
@@ -11,18 +18,27 @@ public class Organization {
     private Long id;
 
     private String name;
+
+    @Column(nullable = false)
     private String email;
+
+    @JsonIgnore
     private String password;
+
+    @Column(nullable = false)
     private String contact;
+
     private String address;
     private String pincode;
-    private String type;
 
+    private String type; // orphanage / oldage / ngo
+
+    @JsonIgnore
     @Column(name = "document_path")
     private String documentPath;
 
     @Enumerated(EnumType.STRING)
-    private OrganizationStatus status;
+    private OrganizationStatus status = OrganizationStatus.PENDING;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

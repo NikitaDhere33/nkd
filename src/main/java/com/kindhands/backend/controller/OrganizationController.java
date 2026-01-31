@@ -3,7 +3,6 @@ package com.kindhands.backend.controller;
 import com.kindhands.backend.entity.Organization;
 import com.kindhands.backend.entity.OrganizationStatus;
 import com.kindhands.backend.repository.OrganizationRepository;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
@@ -44,18 +43,32 @@ public class OrganizationController {
             @RequestParam("document") MultipartFile document
     ) {
         try {
-            if (repo.findByUserId(userId).isPresent()) {
+            // 🔒 Duplicate email
+            if (repo.findByEmail(email).isPresent()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Organization already registered"));
+                        .body("Duplicate entry: Email already registered");
             }
 
+            // 🔒 Duplicate contact
+            if (repo.findByContactNumber(contact).isPresent()) {
+                return ResponseEntity.badRequest()
+                        .body("Duplicate entry: Contact already registered");
+            }
+
+            // 🔒 One user → one organization
+            if (repo.findByUserId(userId).isPresent()) {
+                return ResponseEntity.badRequest()
+                        .body("User already has an organization");
+            }
+
+            // 📁 File upload
             File dir = new File(UPLOAD_DIR);
             if (!dir.exists()) dir.mkdirs();
 
             String fileName = System.currentTimeMillis() + "_" + document.getOriginalFilename();
-            File dest = new File(dir, fileName);
-            document.transferTo(dest);
+            document.transferTo(new File(dir, fileName));
 
+            // 🏢 Save organization
             Organization org = new Organization();
             org.setName(name);
             org.setEmail(email);
@@ -70,12 +83,12 @@ public class OrganizationController {
 
             repo.save(org);
 
-            return ResponseEntity.ok("Organization Registered");
+            return ResponseEntity.ok("Organization registered. Waiting for admin approval");
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Registration Failed");
+                    .body("Registration failed");
         }
     }
 
@@ -83,50 +96,59 @@ public class OrganizationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
 
-        Organization org = repo.findByEmail(data.get("email"))
-                .orElse(null);
+        Organization org = repo.findByEmail(data.get("email")).orElse(null);
 
-        if (org == null) {
+        if (org == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Organization not found");
-        }
 
-        if (!org.getPassword().equals(data.get("password"))) {
+        if (!org.getPassword().equals(data.get("password")))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid password");
-        }
 
-        if (org.getStatus() != OrganizationStatus.APPROVED) {
+        if (org.getStatus() != OrganizationStatus.APPROVED)
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Organization not approved yet");
-        }
+                    .body("Organization not approved by admin");
 
         return ResponseEntity.ok(org);
     }
 
+    // ================= DONOR =================
+    // Donor ला फक्त APPROVED organizations दिसणार
+    @GetMapping("/donor/approved")
+    public List<Organization> approvedOrganizations() {
+        return repo.findByStatus(OrganizationStatus.APPROVED);
+    }
+
     // ================= ADMIN =================
     @GetMapping("/admin/pending")
-    public List<Organization> pending() {
+    public List<Organization> pendingOrganizations() {
         return repo.findByStatus(OrganizationStatus.PENDING);
     }
 
     @PutMapping("/admin/{id}/approve")
     public ResponseEntity<?> approve(@PathVariable Long id) {
-        Organization org = repo.findById(id).orElseThrow();
+        Organization org = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Organization not found"));
+
         org.setStatus(OrganizationStatus.APPROVED);
         repo.save(org);
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok("Organization approved");
     }
 
     @PutMapping("/admin/{id}/reject")
     public ResponseEntity<?> reject(@PathVariable Long id) {
-        Organization org = repo.findById(id).orElseThrow();
+        Organization org = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Organization not found"));
+
         org.setStatus(OrganizationStatus.REJECTED);
         repo.save(org);
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok("Organization rejected");
     }
 
-    // ================= VIEW DOCUMENT =================
+    // ================= VIEW DOCUMENT (ADMIN) =================
     @GetMapping("/admin/document/{id}")
     public ResponseEntity<Resource> viewDocument(@PathVariable Long id) throws Exception {
 
@@ -136,9 +158,8 @@ public class OrganizationController {
         Path filePath = Paths.get(UPLOAD_DIR, org.getDocumentPath());
         Resource resource = new UrlResource(filePath.toUri());
 
-        if (!resource.exists()) {
+        if (!resource.exists())
             return ResponseEntity.notFound().build();
-        }
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
