@@ -14,6 +14,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     Optional<Organization> findByEmail(String email);
 
     Optional<Organization> findByUserId(Long userId);
+    Optional<Organization> findByContact(String contact);
 
-    Optional<Object> findByContactNumber(String contact);
 }

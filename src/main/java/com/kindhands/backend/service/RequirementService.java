@@ -28,6 +28,6 @@ public class RequirementService {
     }
 
     public List<Requirement> getAllOpenRequirements() {
-        return repo.findByStatus("OPEN");
+        return repo.findByStatus(RequirementStatus.valueOf("OPEN"));
     }
 }

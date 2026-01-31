@@ -50,7 +50,7 @@ public class OrganizationController {
             }
 
             // 🔒 Duplicate contact
-            if (repo.findByContactNumber(contact).isPresent()) {
+            if (repo.findByContact(contact).isPresent()) {
                 return ResponseEntity.badRequest()
                         .body("Duplicate entry: Contact already registered");
             }
