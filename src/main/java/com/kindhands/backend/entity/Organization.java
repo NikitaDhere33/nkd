@@ -2,6 +2,7 @@ package com.kindhands.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -17,62 +18,130 @@ public class Organization {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ===== Basic Info =====
+    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
+    // ❌ donor ला password दिसू नये
     @JsonIgnore
+    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String contact;
 
     private String address;
     private String pincode;
 
-    private String type; // orphanage / oldage / ngo
+    // orphanage / oldage / ngo
+    private String type;
 
+    // ❌ donor ला certificate / document दिसू नये
     @JsonIgnore
     @Column(name = "document_path")
     private String documentPath;
 
+    // ===== Status =====
     @Enumerated(EnumType.STRING)
     private OrganizationStatus status = OrganizationStatus.PENDING;
 
+    // ===== Mapping with User =====
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    // ===== getters & setters =====
-    public Long getId() { return id; }
+    // ===== Audit =====
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    // ===== Getters & Setters =====
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getName() {
+        return name;
+    }
 
-    public String getContact() { return contact; }
-    public void setContact(String contact) { this.contact = contact; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getPincode() { return pincode; }
-    public void setPincode(String pincode) { this.pincode = pincode; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getPassword() {
+        return password;
+    }
 
-    public String getDocumentPath() { return documentPath; }
-    public void setDocumentPath(String documentPath) { this.documentPath = documentPath; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-    public OrganizationStatus getStatus() { return status; }
-    public void setStatus(OrganizationStatus status) { this.status = status; }
+    public String getContact() {
+        return contact;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getDocumentPath() {
+        return documentPath;
+    }
+
+    public void setDocumentPath(String documentPath) {
+        this.documentPath = documentPath;
+    }
+
+    public OrganizationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrganizationStatus status) {
+        this.status = status;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

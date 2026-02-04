@@ -27,6 +27,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    // email verified or not
+    @Column(nullable = false)
     private boolean emailVerified = false;
 
     // ===== User Info =====
