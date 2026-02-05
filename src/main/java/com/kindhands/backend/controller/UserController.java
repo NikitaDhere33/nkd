@@ -53,7 +53,7 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    // ================= FORGOT PASSWORD =================
+    // ================= FORGOT PASSWORD (EMAIL OTP) =================
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
@@ -67,7 +67,7 @@ public class UserController {
 
         emailService.sendEmail(
                 email,
-                "KindHands Password Reset OTP",
+                "KindHands - Password Reset OTP",
                 "Your OTP is: " + otp + "\nValid for 5 minutes"
         );
 

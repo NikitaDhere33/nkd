@@ -17,21 +17,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== Common Auth Fields =====
+    // ===== AUTH FIELDS =====
     @Column(nullable = false, unique = true)
     private String email;
 
+    // mobile ठेवतोय DB मध्ये (future use साठी), पण OTP साठी वापरत नाही
     @Column(nullable = false, unique = true)
     private String mobile;
 
     @Column(nullable = false)
     private String password;
 
-    // email verified or not
-    @Column(nullable = false)
-    private boolean emailVerified = false;
-
-    // ===== User Info =====
+    // ===== USER INFO =====
     private String name;
     private String gender;
     private String address;
@@ -41,13 +38,14 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    // ===== OTP (ONLY for forgot password / reset password) =====
+    // ===== OTP (ONLY for FORGOT / RESET PASSWORD via EMAIL) =====
     @Column(length = 6)
     private String otp;
 
     private LocalDateTime otpExpiry;
 
-    // ===== Getters & Setters =====
+    // ===== GETTERS & SETTERS =====
+
     public Long getId() {
         return id;
     }
@@ -78,14 +76,6 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public boolean isEmailVerified() {
-        return emailVerified;
-    }
-
-    public void setEmailVerified(boolean emailVerified) {
-        this.emailVerified = emailVerified;
     }
 
     public String getName() {
