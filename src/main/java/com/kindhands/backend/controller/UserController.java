@@ -3,7 +3,6 @@ package com.kindhands.backend.controller;
 import com.kindhands.backend.entity.User;
 import com.kindhands.backend.repository.UserRepository;
 import com.kindhands.backend.service.EmailService;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,68 +23,23 @@ public class UserController {
         this.emailService = emailService;
     }
 
-    // ===================== REGISTER =====================
+    // ================= REGISTER (NO OTP) =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
 
-        // 🔒 Duplicate email check
         if (userRepository.existsByEmail(user.getEmail())) {
-            return ResponseEntity.badRequest().body("Duplicate entry: Email already exists");
+            return ResponseEntity.badRequest().body("Email already exists");
         }
 
-        // 🔒 Duplicate mobile check
         if (userRepository.existsByMobile(user.getMobile())) {
-            return ResponseEntity.badRequest().body("Duplicate entry: Mobile already exists");
+            return ResponseEntity.badRequest().body("Mobile already exists");
         }
-
-        // Generate OTP
-        String otp = generateOtp();
-        user.setOtp(otp);
-        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
-        user.setEmailVerified(false);
 
         userRepository.save(user);
-
-        // Send OTP Email
-        emailService.sendEmail(
-                user.getEmail(),
-                "KindHands Email Verification",
-                "Your OTP is: " + otp + "\nValid for 5 minutes"
-        );
-
-        return ResponseEntity.ok("Registered successfully. Please verify OTP sent to email.");
+        return ResponseEntity.ok("Registered successfully");
     }
 
-    // ===================== VERIFY OTP =====================
-    @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(
-            @RequestParam String email,
-            @RequestParam String otp
-    ) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getOtp() == null) {
-            return ResponseEntity.badRequest().body("OTP not generated");
-        }
-
-        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("OTP expired");
-        }
-
-        if (!user.getOtp().equals(otp)) {
-            return ResponseEntity.badRequest().body("Invalid OTP");
-        }
-
-        user.setEmailVerified(true);
-        user.setOtp(null);
-        user.setOtpExpiry(null);
-        userRepository.save(user);
-
-        return ResponseEntity.ok("Email verified successfully");
-    }
-
-    // ===================== LOGIN =====================
+    // ================= LOGIN =================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
 
@@ -96,14 +50,10 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid password");
         }
 
-        if (!user.isEmailVerified()) {
-            return ResponseEntity.badRequest().body("Email not verified");
-        }
-
         return ResponseEntity.ok(user);
     }
 
-    // ===================== FORGOT PASSWORD =====================
+    // ================= FORGOT PASSWORD =================
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
@@ -124,7 +74,7 @@ public class UserController {
         return ResponseEntity.ok("OTP sent to email");
     }
 
-    // ===================== RESET PASSWORD =====================
+    // ================= RESET PASSWORD =================
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(
             @RequestParam String email,
@@ -155,7 +105,7 @@ public class UserController {
         return ResponseEntity.ok("Password reset successful");
     }
 
-    // ===================== OTP GENERATOR =====================
+    // ================= OTP GENERATOR =================
     private String generateOtp() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }

@@ -46,6 +46,7 @@ public class Organization {
 
     // ===== Status =====
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrganizationStatus status = OrganizationStatus.PENDING;
 
     // ===== Mapping with User =====
@@ -53,6 +54,7 @@ public class Organization {
     private Long userId;
 
     // ===== Audit =====
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ===== Getters & Setters =====

@@ -41,7 +41,7 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    // ===== OTP for verification & forgot password =====
+    // ===== OTP (ONLY for forgot password / reset password) =====
     @Column(length = 6)
     private String otp;
 
