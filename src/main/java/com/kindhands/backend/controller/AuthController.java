@@ -5,7 +5,6 @@ import com.kindhands.backend.entity.OrganizationStatus;
 import com.kindhands.backend.entity.User;
 import com.kindhands.backend.repository.OrganizationRepository;
 import com.kindhands.backend.repository.UserRepository;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,15 +34,13 @@ public class AuthController {
                     .body(Map.of("message", "Email already registered"));
         }
 
-        // 🔥 DEFAULT ROLE
+        // Default role
         if (user.getRole() == null || user.getRole().isEmpty()) {
             user.setRole("DONOR");
         }
 
         userRepository.save(user);
-
-        // 🔥 IMPORTANT: return USER (frontend needs userId)
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(user); // frontend ला userId हवा
     }
 
     // ================= LOGIN =================
@@ -58,13 +55,11 @@ public class AuthController {
                     .body(Map.of("message", "Invalid password"));
         }
 
-        // 🔥 ORGANIZATION CHECK
+        // Organization approval check
         if ("ORGANIZATION".equalsIgnoreCase(user.getRole())) {
-
             Organization org = organizationRepository
                     .findByUserId(user.getId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Organization profile not found"));
+                    .orElseThrow(() -> new RuntimeException("Organization not found"));
 
             if (org.getStatus() != OrganizationStatus.APPROVED) {
                 return ResponseEntity.status(403)
@@ -75,28 +70,34 @@ public class AuthController {
         return ResponseEntity.ok(user);
     }
 
-    // ================= FORGOT PASSWORD =================
+    // ================= FORGOT PASSWORD (EMAIL OTP) =================
+    // 🔁 HERE EMAIL REPLACED TO @RequestParam
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> data) {
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
-        User user = userRepository.findByMobile(data.get("mobile"))
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String otp = String.valueOf(100000 + new Random().nextInt(900000));
         user.setOtp(otp);
         userRepository.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "OTP sent"));
+        // 🔴 Email sending future madhe add karta yeil
+        System.out.println("OTP for " + email + " = " + otp);
+
+        return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
     }
 
     // ================= VERIFY OTP =================
+    // 🔁 HERE ALSO @RequestParam
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> data) {
+    public ResponseEntity<?> verifyOtp(@RequestParam String email,
+                                       @RequestParam String otp) {
 
-        User user = userRepository.findByMobile(data.get("mobile"))
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!data.get("otp").equals(user.getOtp())) {
+        if (!otp.equals(user.getOtp())) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Invalid OTP"));
         }
@@ -105,13 +106,15 @@ public class AuthController {
     }
 
     // ================= RESET PASSWORD =================
+    // 🔁 HERE ALSO @RequestParam
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> data) {
+    public ResponseEntity<?> resetPassword(@RequestParam String email,
+                                           @RequestParam String newPassword) {
 
-        User user = userRepository.findByMobile(data.get("mobile"))
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setPassword(data.get("newPassword"));
+        user.setPassword(newPassword);
         user.setOtp(null);
         userRepository.save(user);
 
