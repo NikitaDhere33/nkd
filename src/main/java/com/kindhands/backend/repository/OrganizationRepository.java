@@ -9,11 +9,19 @@ import java.util.Optional;
 
 public interface OrganizationRepository extends JpaRepository<Organization, Long> {
 
+    // 🔹 Admin use – pending / approved / rejected orgs
     List<Organization> findByStatus(OrganizationStatus status);
 
+    // 🔹 Login / Forgot password (organization email check)
     Optional<Organization> findByEmail(String email);
 
+    // 🔹 Login mapping (user ↔ organization)
     Optional<Organization> findByUserId(Long userId);
 
+    // 🔹 Registration duplicate check
     Optional<Organization> findByContact(String contact);
+
+    // ✅ EXTRA (SAFE & USEFUL)
+    boolean existsByEmail(String email);
+    boolean existsByContact(String contact);
 }

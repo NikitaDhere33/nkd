@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 @RestController
@@ -21,9 +22,11 @@ public class AuthController {
     private final OrganizationRepository organizationRepository;
     private final EmailService emailService;
 
-    public AuthController(UserRepository userRepository,
-                          OrganizationRepository organizationRepository,
-                          EmailService emailService) {
+    public AuthController(
+            UserRepository userRepository,
+            OrganizationRepository organizationRepository,
+            EmailService emailService
+    ) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.emailService = emailService;
@@ -32,7 +35,6 @@ public class AuthController {
     // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Email already registered"));
@@ -76,15 +78,35 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email not found"));
+        User user = null;
 
-        // Generate OTP
+        // 🔹 1) First check USER table (DONOR / ORGANIZATION user)
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isPresent()) {
+            user = userOpt.get();
+        } else {
+            // 🔹 2) If not found, check ORGANIZATION table
+            Optional<Organization> orgOpt = organizationRepository.findByEmail(email);
+
+            if (orgOpt.isPresent()) {
+                Organization org = orgOpt.get();
+
+                // 🔹 map organization → user
+                user = userRepository.findById(org.getUserId())
+                        .orElseThrow(() -> new RuntimeException("Linked user not found"));
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Email not found"));
+            }
+        }
+
+        // 🔐 Generate OTP
         String otp = String.valueOf(100000 + new Random().nextInt(900000));
         user.setOtp(otp);
         userRepository.save(user);
 
-        // ✅ Send OTP email
+        // 📧 Send OTP Email
         emailService.sendOtpEmail(email, otp);
 
         return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
@@ -92,9 +114,10 @@ public class AuthController {
 
     // ================= VERIFY OTP =================
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestParam String email,
-                                       @RequestParam String otp) {
-
+    public ResponseEntity<?> verifyOtp(
+            @RequestParam String email,
+            @RequestParam String otp
+    ) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -108,10 +131,11 @@ public class AuthController {
 
     // ================= RESET PASSWORD =================
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String email,
-                                           @RequestParam String otp,
-                                           @RequestParam String newPassword) {
-
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String email,
+            @RequestParam String otp,
+            @RequestParam String newPassword
+    ) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -124,6 +148,8 @@ public class AuthController {
         user.setOtp(null); // clear OTP
         userRepository.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "Password reset successful"));
+        return ResponseEntity.ok(
+                Map.of("message", "Password reset successful")
+        );
     }
 }

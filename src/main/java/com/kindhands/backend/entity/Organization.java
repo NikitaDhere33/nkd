@@ -25,7 +25,7 @@ public class Organization {
     @Column(nullable = false, unique = true)
     private String email;
 
-    // ❌ donor ला password दिसू नये
+    // ❌ password API response मध्ये दिसू नये
     @JsonIgnore
     @Column(nullable = false)
     private String password;
@@ -39,7 +39,7 @@ public class Organization {
     // orphanage / oldage / ngo
     private String type;
 
-    // ❌ donor ला certificate / document दिसू नये
+    // ❌ document path API मध्ये दिसू नये
     @JsonIgnore
     @Column(name = "document_path")
     private String documentPath;
@@ -52,6 +52,12 @@ public class Organization {
     // ===== Mapping with User =====
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    // ===== FORGOT PASSWORD (OPTIONAL – future ready) =====
+    @Column(length = 6)
+    private String otp;
+
+    private LocalDateTime otpExpiry;
 
     // ===== Audit =====
     @Column(nullable = false)
@@ -141,6 +147,22 @@ public class Organization {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public LocalDateTime getOtpExpiry() {
+        return otpExpiry;
+    }
+
+    public void setOtpExpiry(LocalDateTime otpExpiry) {
+        this.otpExpiry = otpExpiry;
     }
 
     public LocalDateTime getCreatedAt() {

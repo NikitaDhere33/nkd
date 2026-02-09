@@ -21,12 +21,17 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    // mobile ठेवतोय DB मध्ये (future use साठी), पण OTP साठी वापरत नाही
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String mobile;
 
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private boolean publicDonationHistory = false;
+
+
+
 
     // ===== USER INFO =====
     private String name;
@@ -38,10 +43,11 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    // ===== OTP (ONLY for FORGOT / RESET PASSWORD via EMAIL) =====
+    // ===== OTP (FOR EMAIL FORGOT PASSWORD) =====
     @Column(length = 6)
     private String otp;
 
+    // ✅ OTP expiry (5 min)
     private LocalDateTime otpExpiry;
 
     // ===== GETTERS & SETTERS =====
@@ -49,7 +55,13 @@ public class User {
     public Long getId() {
         return id;
     }
+    public boolean isPublicDonationHistory() {
+        return publicDonationHistory;
+    }
 
+    public void setPublicDonationHistory(boolean publicDonationHistory) {
+        this.publicDonationHistory = publicDonationHistory;
+    }
     public void setId(Long id) {
         this.id = id;
     }
