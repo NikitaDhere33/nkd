@@ -9,8 +9,8 @@ import com.kindhands.backend.service.EmailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 @RestController
@@ -35,12 +35,13 @@ public class AuthController {
     // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+
+        if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Email already registered"));
         }
 
-        if (user.getRole() == null || user.getRole().isEmpty()) {
+        if (user.getRole() == null || user.getRole().isBlank()) {
             user.setRole("DONOR");
         }
 
@@ -60,10 +61,10 @@ public class AuthController {
                     .body(Map.of("message", "Invalid password"));
         }
 
-        // Organization approval check
+        // 🔒 If ORGANIZATION → check approval
         if ("ORGANIZATION".equalsIgnoreCase(user.getRole())) {
             Organization org = organizationRepository.findByUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("Organization not found"));
+                    .orElseThrow(() -> new RuntimeException("Organization profile not found"));
 
             if (org.getStatus() != OrganizationStatus.APPROVED) {
                 return ResponseEntity.status(403)
@@ -78,35 +79,16 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
-        User user = null;
+        // ✅ EMAIL ALWAYS CHECKED IN USER TABLE ONLY
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email not found"));
 
-        // 🔹 1) First check USER table (DONOR / ORGANIZATION user)
-        Optional<User> userOpt = userRepository.findByEmail(email);
-
-        if (userOpt.isPresent()) {
-            user = userOpt.get();
-        } else {
-            // 🔹 2) If not found, check ORGANIZATION table
-            Optional<Organization> orgOpt = organizationRepository.findByEmail(email);
-
-            if (orgOpt.isPresent()) {
-                Organization org = orgOpt.get();
-
-                // 🔹 map organization → user
-                user = userRepository.findById(org.getUserId())
-                        .orElseThrow(() -> new RuntimeException("Linked user not found"));
-            } else {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Email not found"));
-            }
-        }
-
-        // 🔐 Generate OTP
         String otp = String.valueOf(100000 + new Random().nextInt(900000));
+
         user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
         userRepository.save(user);
 
-        // 📧 Send OTP Email
         emailService.sendOtpEmail(email, otp);
 
         return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
@@ -119,11 +101,16 @@ public class AuthController {
             @RequestParam String otp
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Email not found"));
 
         if (user.getOtp() == null || !user.getOtp().equals(otp)) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Invalid OTP"));
+        }
+
+        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "OTP expired"));
         }
 
         return ResponseEntity.ok(Map.of("message", "OTP verified"));
@@ -137,7 +124,7 @@ public class AuthController {
             @RequestParam String newPassword
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Email not found"));
 
         if (user.getOtp() == null || !user.getOtp().equals(otp)) {
             return ResponseEntity.badRequest()
@@ -145,11 +132,10 @@ public class AuthController {
         }
 
         user.setPassword(newPassword);
-        user.setOtp(null); // clear OTP
+        user.setOtp(null);
+        user.setOtpExpiry(null);
         userRepository.save(user);
 
-        return ResponseEntity.ok(
-                Map.of("message", "Password reset successful")
-        );
+        return ResponseEntity.ok(Map.of("message", "Password reset successful"));
     }
 }

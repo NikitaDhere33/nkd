@@ -13,7 +13,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     List<Organization> findByStatus(OrganizationStatus status);
 
     // 🔹 Login / Forgot password (organization email check)
-    Optional<Organization> findByEmail(String email);
+    //Optional<Organization> findByEmail(String email);
 
     // 🔹 Login mapping (user ↔ organization)
     Optional<Organization> findByUserId(Long userId);
@@ -22,6 +22,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     Optional<Organization> findByContact(String contact);
 
     // ✅ EXTRA (SAFE & USEFUL)
-    boolean existsByEmail(String email);
+    //boolean existsByEmail(String email);
     boolean existsByContact(String contact);
 }

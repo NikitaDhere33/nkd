@@ -62,4 +62,7 @@ public class DonationRequest {
 
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+
+    public void setCreatedAt(LocalDateTime now) {
+    }
 }

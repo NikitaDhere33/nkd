@@ -13,11 +13,12 @@ import java.time.LocalDateTime;
 )
 public class User {
 
+    // ================= PRIMARY KEY =================
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== AUTH FIELDS =====
+    // ================= AUTH =================
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -27,13 +28,11 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    // Donor public donation history permission
     @Column(nullable = false)
     private boolean publicDonationHistory = false;
 
-
-
-
-    // ===== USER INFO =====
+    // ================= PROFILE =================
     private String name;
     private String gender;
     private String address;
@@ -43,25 +42,17 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    // ===== OTP (FOR EMAIL FORGOT PASSWORD) =====
+    // ================= OTP (FORGOT PASSWORD) =================
     @Column(length = 6)
     private String otp;
 
-    // ✅ OTP expiry (5 min)
     private LocalDateTime otpExpiry;
 
-    // ===== GETTERS & SETTERS =====
-
+    // ================= GETTERS & SETTERS =================
     public Long getId() {
         return id;
     }
-    public boolean isPublicDonationHistory() {
-        return publicDonationHistory;
-    }
 
-    public void setPublicDonationHistory(boolean publicDonationHistory) {
-        this.publicDonationHistory = publicDonationHistory;
-    }
     public void setId(Long id) {
         this.id = id;
     }
@@ -88,6 +79,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isPublicDonationHistory() {
+        return publicDonationHistory;
+    }
+
+    public void setPublicDonationHistory(boolean publicDonationHistory) {
+        this.publicDonationHistory = publicDonationHistory;
     }
 
     public String getName() {

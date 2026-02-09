@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 @Table(
         name = "organizations",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email"),
                 @UniqueConstraint(columnNames = "contact")
         }
 )
 public class Organization {
 
+    // ===== Primary Key =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,10 +22,7 @@ public class Organization {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    // ❌ password API response मध्ये दिसू नये
+    // password API response मध्ये दिसू नये
     @JsonIgnore
     @Column(nullable = false)
     private String password;
@@ -36,10 +33,10 @@ public class Organization {
     private String address;
     private String pincode;
 
-    // orphanage / oldage / ngo
+    // NGO / orphanage / oldage
     private String type;
 
-    // ❌ document path API मध्ये दिसू नये
+    // document path API मध्ये दिसू नये
     @JsonIgnore
     @Column(name = "document_path")
     private String documentPath;
@@ -53,7 +50,7 @@ public class Organization {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    // ===== FORGOT PASSWORD (OPTIONAL – future ready) =====
+    // ===== Forgot Password (optional) =====
     @Column(length = 6)
     private String otp;
 
@@ -64,7 +61,6 @@ public class Organization {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ===== Getters & Setters =====
-
     public Long getId() {
         return id;
     }
@@ -75,14 +71,6 @@ public class Organization {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {

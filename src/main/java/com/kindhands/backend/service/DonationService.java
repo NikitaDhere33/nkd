@@ -1,5 +1,6 @@
 package com.kindhands.backend.service;
 
+import com.kindhands.backend.entity.Donate;
 import com.kindhands.backend.entity.DonationRequest;
 import com.kindhands.backend.enums.RequestStatus;
 import com.kindhands.backend.repository.DonationRepository;
@@ -21,30 +22,45 @@ public class DonationService {
         this.donationRepo = donationRepo;
     }
 
-    // Organization creates request
+    // ================= ORGANIZATION =================
+
+    // Organization creates donation request
     public DonationRequest createRequest(DonationRequest request) {
+        request.setStatus(RequestStatus.OPEN);
+        request.setCreatedAt(LocalDateTime.now());
         return requestRepo.save(request);
     }
 
-    // Donor sees open requests
+    // ================= DONOR =================
+
+    // Donor views all OPEN requests
     public List<DonationRequest> getOpenRequests() {
         return requestRepo.findByStatus(RequestStatus.OPEN);
     }
 
-    // Donor donates
-    public Donation donate(Donation donation) {
-        Donation saved = donationRepo.save(donation);
+    // Donor donates for a request
+    public Donate donate(Donate donate) {
 
-        DonationRequest req = requestRepo.findById(donation.getRequestId()).orElseThrow();
-        req.setStatus(RequestStatus.COMPLETED);
-        req.setCompletedAt(LocalDateTime.now());
-        requestRepo.save(req);
+        // save donation
+        donate.setDonatedAt(LocalDateTime.now());
+        Donate savedDonation = donationRepo.save(donate);
 
-        return saved;
+        // update request status
+        DonationRequest request = requestRepo
+                .findById(donate.getOrganizationId())
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        request.setStatus(RequestStatus.COMPLETED);
+        request.setCompletedAt(LocalDateTime.now());
+        requestRepo.save(request);
+
+        return savedDonation;
     }
 
-    // Public history
-    public List<Donation> getPublicHistory() {
+    // ================= PUBLIC =================
+
+    // Public donation history (only allowed donors)
+    public List<Donate> getPublicHistory() {
         return donationRepo.findByPublicHistoryTrue();
     }
 }
