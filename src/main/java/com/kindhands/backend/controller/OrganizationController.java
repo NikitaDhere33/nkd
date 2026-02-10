@@ -33,6 +33,7 @@ public class OrganizationController {
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(
             @RequestParam String name,
+            @RequestParam String email,
             @RequestParam String password,
             @RequestParam String contact,
             @RequestParam String type,
@@ -42,7 +43,12 @@ public class OrganizationController {
             @RequestParam("document") MultipartFile document
     ) {
         try {
-            // 🔒 Duplicate contact check
+            // 🔒 Duplicate email
+            if (repo.findByEmail(email).isPresent()) {
+                return ResponseEntity.badRequest().body("Email already registered");
+            }
+
+            // 🔒 Duplicate contact
             if (repo.findByContact(contact).isPresent()) {
                 return ResponseEntity.badRequest().body("Contact already registered");
             }
@@ -62,7 +68,8 @@ public class OrganizationController {
             // 🏢 Save organization
             Organization org = new Organization();
             org.setName(name);
-            org.setPassword(password); // 🔐 org-level password
+            org.setEmail(email);          // ✅ EMAIL ADDED
+            org.setPassword(password);   // org-level password
             org.setContact(contact);
             org.setType(type);
             org.setAddress(address);
@@ -77,34 +84,28 @@ public class OrganizationController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Organization registration failed");
         }
     }
 
     // ================= LOGIN =================
-    // 🔑 Login via USER → userId → organization
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
 
-        Long userId = Long.valueOf(data.get("userId"));
-        String password = data.get("password");
-
-        Organization org = repo.findByUserId(userId).orElse(null);
+        Organization org = repo.findByEmail(data.get("email")).orElse(null);
 
         if (org == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Organization not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Organization not found");
         }
 
-        if (!org.getPassword().equals(password)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid password");
+        if (!org.getPassword().equals(data.get("password"))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
         }
 
         if (org.getStatus() != OrganizationStatus.APPROVED) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Organization not approved by admin");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Organization not approved");
         }
 
         return ResponseEntity.ok(org);
@@ -126,10 +127,8 @@ public class OrganizationController {
     public ResponseEntity<?> approve(@PathVariable Long id) {
         Organization org = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
-
         org.setStatus(OrganizationStatus.APPROVED);
         repo.save(org);
-
         return ResponseEntity.ok("Organization approved");
     }
 
@@ -137,10 +136,8 @@ public class OrganizationController {
     public ResponseEntity<?> reject(@PathVariable Long id) {
         Organization org = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
-
         org.setStatus(OrganizationStatus.REJECTED);
         repo.save(org);
-
         return ResponseEntity.ok("Organization rejected");
     }
 

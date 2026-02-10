@@ -21,6 +21,8 @@ public class Organization {
     // ===== Basic Info =====
     @Column(nullable = false)
     private String name;
+    @Column(nullable = false, unique = true)
+    private String email;
 
     // password API response मध्ये दिसू नये
     @JsonIgnore
@@ -136,6 +138,14 @@ public class Organization {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
 
     public String getOtp() {
         return otp;

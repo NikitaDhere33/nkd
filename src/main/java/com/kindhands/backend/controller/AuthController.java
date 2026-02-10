@@ -61,10 +61,12 @@ public class AuthController {
                     .body(Map.of("message", "Invalid password"));
         }
 
-        // 🔒 If ORGANIZATION → check approval
+        // 🔒 Organization approval check
         if ("ORGANIZATION".equalsIgnoreCase(user.getRole())) {
+
             Organization org = organizationRepository.findByUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("Organization profile not found"));
+                    .orElseThrow(() ->
+                            new RuntimeException("Organization profile not found"));
 
             if (org.getStatus() != OrganizationStatus.APPROVED) {
                 return ResponseEntity.status(403)
@@ -79,7 +81,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
-        // ✅ EMAIL ALWAYS CHECKED IN USER TABLE ONLY
+        // ✅ EMAIL ONLY FROM USER TABLE
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Email not found"));
 
@@ -94,12 +96,14 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
     }
 
+
     // ================= VERIFY OTP =================
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(
             @RequestParam String email,
             @RequestParam String otp
     ) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Email not found"));
 
@@ -123,6 +127,7 @@ public class AuthController {
             @RequestParam String otp,
             @RequestParam String newPassword
     ) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Email not found"));
 
@@ -134,8 +139,11 @@ public class AuthController {
         user.setPassword(newPassword);
         user.setOtp(null);
         user.setOtpExpiry(null);
+
         userRepository.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "Password reset successful"));
+        return ResponseEntity.ok(
+                Map.of("message", "Password reset successful")
+        );
     }
 }
