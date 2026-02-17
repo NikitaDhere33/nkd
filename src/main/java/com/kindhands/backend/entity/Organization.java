@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 @Table(
         name = "organizations",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email"),
                 @UniqueConstraint(columnNames = "contact")
         }
 )
 public class Organization {
 
+    // ===== Primary Key =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,11 +21,10 @@ public class Organization {
     // ===== Basic Info =====
     @Column(nullable = false)
     private String name;
-
     @Column(nullable = false, unique = true)
     private String email;
 
-    // ❌ donor ला password दिसू नये
+    // password API response मध्ये दिसू नये
     @JsonIgnore
     @Column(nullable = false)
     private String password;
@@ -36,10 +35,10 @@ public class Organization {
     private String address;
     private String pincode;
 
-    // orphanage / oldage / ngo
+    // NGO / orphanage / oldage
     private String type;
 
-    // ❌ donor ला certificate / document दिसू नये
+    // document path API मध्ये दिसू नये
     @JsonIgnore
     @Column(name = "document_path")
     private String documentPath;
@@ -53,12 +52,17 @@ public class Organization {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    // ===== Forgot Password (optional) =====
+    @Column(length = 6)
+    private String otp;
+
+    private LocalDateTime otpExpiry;
+
     // ===== Audit =====
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ===== Getters & Setters =====
-
     public Long getId() {
         return id;
     }
@@ -69,14 +73,6 @@ public class Organization {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {
@@ -141,6 +137,30 @@ public class Organization {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public LocalDateTime getOtpExpiry() {
+        return otpExpiry;
+    }
+
+    public void setOtpExpiry(LocalDateTime otpExpiry) {
+        this.otpExpiry = otpExpiry;
     }
 
     public LocalDateTime getCreatedAt() {

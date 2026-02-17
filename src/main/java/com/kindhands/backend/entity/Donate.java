@@ -1,50 +1,138 @@
-
 package com.kindhands.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "donation")
+@Table(name = "donations")
 public class Donate {
 
+    // ================= PRIMARY KEY =================
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Clothes, Food, Books, Medical Kit, Toys, Stationery
-    private String donationType;
+    // ================= DONOR INFO =================
+    @Column(nullable = false)
+    private Long donorId;          // User table ID
 
-    // Book name / Toy name / Stationery item
-    private String itemName;
+    @Column(nullable = false)
+    private String donorName;
 
-    // Educational, Fiction, Religious, Others
-    private String category;
+    @Column(nullable = false)
+    private String donorEmail;
 
-    // Food type (Rice, Wheat, Canned etc.)
-    private String foodType;
+    // Donor permission for public donation history
+    @Column(nullable = false)
+    private boolean publicHistory = false;
 
-    // Food expiry date
-    private LocalDate expiryDate;
-
-    // Medical kit type (First Aid, Hygiene)
-    private String kitType;
-
-    private Integer quantity;
-
-    // NGO, Orphanage, School etc.
-    private String organizationType;
+    // ================= ORGANIZATION INFO =================
+    @Column(nullable = false)
+    private Long organizationId;
 
     private String organizationName;
+    private String organizationType;
+    private String organizationAddress;
 
-    // -------- Getters & Setters --------
+    // ================= DONATION DETAILS =================
+    // Clothes, Food, Books, Medical, Toys etc.
+    @Column(nullable = false)
+    private String donationType;
+
+    private String itemName;
+    private String category;     // Educational, Fiction, etc.
+    private String foodType;
+    private LocalDate expiryDate;
+    private String kitType;
+    private Integer quantity;
+
+    // ================= REQUEST & STATUS =================
+    // When organization posted request
+    private LocalDateTime requestPostedAt;
+
+    // When donor donated
+    private LocalDateTime donatedAt;
+
+    // When donation was completed
+    private LocalDateTime completedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DonationStatus status = DonationStatus.PENDING;
+
+    // ================= AUDIT =================
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    // ================= GETTERS & SETTERS =================
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public Long getDonorId() {
+        return donorId;
+    }
+
+    public void setDonorId(Long donorId) {
+        this.donorId = donorId;
+    }
+
+    public String getDonorName() {
+        return donorName;
+    }
+
+    public void setDonorName(String donorName) {
+        this.donorName = donorName;
+    }
+
+    public String getDonorEmail() {
+        return donorEmail;
+    }
+
+    public void setDonorEmail(String donorEmail) {
+        this.donorEmail = donorEmail;
+    }
+
+    public boolean isPublicHistory() {
+        return publicHistory;
+    }
+
+    public void setPublicHistory(boolean publicHistory) {
+        this.publicHistory = publicHistory;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+
+    public String getOrganizationType() {
+        return organizationType;
+    }
+
+    public void setOrganizationType(String organizationType) {
+        this.organizationType = organizationType;
+    }
+
+    public String getOrganizationAddress() {
+        return organizationAddress;
+    }
+
+    public void setOrganizationAddress(String organizationAddress) {
+        this.organizationAddress = organizationAddress;
     }
 
     public String getDonationType() {
@@ -103,19 +191,39 @@ public class Donate {
         this.quantity = quantity;
     }
 
-    public String getOrganizationType() {
-        return organizationType;
+    public LocalDateTime getRequestPostedAt() {
+        return requestPostedAt;
     }
 
-    public void setOrganizationType(String organizationType) {
-        this.organizationType = organizationType;
+    public void setRequestPostedAt(LocalDateTime requestPostedAt) {
+        this.requestPostedAt = requestPostedAt;
     }
 
-    public String getOrganizationName() {
-        return organizationName;
+    public LocalDateTime getDonatedAt() {
+        return donatedAt;
     }
 
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
+    public void setDonatedAt(LocalDateTime donatedAt) {
+        this.donatedAt = donatedAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(LocalDateTime completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public DonationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(DonationStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

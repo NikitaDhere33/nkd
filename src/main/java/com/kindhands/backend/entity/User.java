@@ -13,25 +13,26 @@ import java.time.LocalDateTime;
 )
 public class User {
 
+    // ================= PRIMARY KEY =================
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== Common Auth Fields =====
+    // ================= AUTH =================
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String mobile;
 
     @Column(nullable = false)
     private String password;
 
-    // email verified or not
+    // Donor public donation history permission
     @Column(nullable = false)
-    private boolean emailVerified = false;
+    private boolean publicDonationHistory = false;
 
-    // ===== User Info =====
+    // ================= PROFILE =================
     private String name;
     private String gender;
     private String address;
@@ -41,13 +42,13 @@ public class User {
     @Column(nullable = false)
     private String role;
 
-    // ===== OTP (ONLY for forgot password / reset password) =====
+    // ================= OTP (FORGOT PASSWORD) =================
     @Column(length = 6)
     private String otp;
 
     private LocalDateTime otpExpiry;
 
-    // ===== Getters & Setters =====
+    // ================= GETTERS & SETTERS =================
     public Long getId() {
         return id;
     }
@@ -80,12 +81,12 @@ public class User {
         this.password = password;
     }
 
-    public boolean isEmailVerified() {
-        return emailVerified;
+    public boolean isPublicDonationHistory() {
+        return publicDonationHistory;
     }
 
-    public void setEmailVerified(boolean emailVerified) {
-        this.emailVerified = emailVerified;
+    public void setPublicDonationHistory(boolean publicDonationHistory) {
+        this.publicDonationHistory = publicDonationHistory;
     }
 
     public String getName() {

@@ -23,18 +23,12 @@ public class UserController {
         this.emailService = emailService;
     }
 
-    // ================= REGISTER (NO OTP) =================
+    // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body("Email already exists");
         }
-
-        if (userRepository.existsByMobile(user.getMobile())) {
-            return ResponseEntity.badRequest().body("Mobile already exists");
-        }
-
         userRepository.save(user);
         return ResponseEntity.ok("Registered successfully");
     }
@@ -42,14 +36,12 @@ public class UserController {
     // ================= LOGIN =================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> data) {
-
         User user = userRepository.findByEmail(data.get("email"))
                 .orElseThrow(() -> new RuntimeException("Invalid email"));
 
         if (!user.getPassword().equals(data.get("password"))) {
             return ResponseEntity.badRequest().body("Invalid password");
         }
-
         return ResponseEntity.ok(user);
     }
 
@@ -67,20 +59,18 @@ public class UserController {
 
         emailService.sendEmail(
                 email,
-                "KindHands Password Reset OTP",
+                "KindHands - Password Reset OTP",
                 "Your OTP is: " + otp + "\nValid for 5 minutes"
         );
 
-        return ResponseEntity.ok("OTP sent to email");
+        return ResponseEntity.ok(Map.of("message", "OTP sent"));
     }
 
-    // ================= RESET PASSWORD =================
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(
+    // ================= VERIFY OTP =================
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(
             @RequestParam String email,
-            @RequestParam String otp,
-            @RequestParam String newPassword
-    ) {
+            @RequestParam String otp) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -97,6 +87,23 @@ public class UserController {
             return ResponseEntity.badRequest().body("Invalid OTP");
         }
 
+        return ResponseEntity.ok(Map.of("message", "OTP verified"));
+    }
+
+    // ================= RESET PASSWORD =================
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String email,
+            @RequestParam String otp,
+            @RequestParam String newPassword) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!otp.equals(user.getOtp())) {
+            return ResponseEntity.badRequest().body("Invalid OTP");
+        }
+
         user.setPassword(newPassword);
         user.setOtp(null);
         user.setOtpExpiry(null);
@@ -105,7 +112,6 @@ public class UserController {
         return ResponseEntity.ok("Password reset successful");
     }
 
-    // ================= OTP GENERATOR =================
     private String generateOtp() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }
