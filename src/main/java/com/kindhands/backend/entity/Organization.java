@@ -6,10 +6,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "organizations",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "contact")
-        }
+        name = "organizations"
 )
 public class Organization {
 
@@ -29,7 +26,7 @@ public class Organization {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String contact;
 
     private String address;
