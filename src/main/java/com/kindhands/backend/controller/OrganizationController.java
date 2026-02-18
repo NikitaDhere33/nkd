@@ -30,6 +30,7 @@ public class OrganizationController {
     }
 
     // ================= REGISTER =================
+    // ================= REGISTER =================
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(
             @RequestParam String name,
@@ -39,7 +40,6 @@ public class OrganizationController {
             @RequestParam String type,
             @RequestParam String address,
             @RequestParam String pincode,
-            @RequestParam Long userId,
             @RequestParam("document") MultipartFile document
     ) {
         try {
@@ -53,11 +53,6 @@ public class OrganizationController {
                 return ResponseEntity.badRequest().body("Contact already registered");
             }
 
-            // 🔒 One user → one organization
-            if (repo.findByUserId(userId).isPresent()) {
-                return ResponseEntity.badRequest().body("User already has an organization");
-            }
-
             // 📁 Upload document
             File dir = new File(UPLOAD_DIR);
             if (!dir.exists()) dir.mkdirs();
@@ -68,13 +63,12 @@ public class OrganizationController {
             // 🏢 Save organization
             Organization org = new Organization();
             org.setName(name);
-            org.setEmail(email);          // ✅ EMAIL ADDED
-            org.setPassword(password);   // org-level password
+            org.setEmail(email);
+            org.setPassword(password);
             org.setContact(contact);
             org.setType(type);
             org.setAddress(address);
             org.setPincode(pincode);
-            org.setUserId(userId);
             org.setDocumentPath(fileName);
             org.setStatus(OrganizationStatus.PENDING);
 
@@ -89,6 +83,7 @@ public class OrganizationController {
                     .body("Organization registration failed");
         }
     }
+
 
     // ================= LOGIN =================
     @PostMapping("/login")

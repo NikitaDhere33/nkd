@@ -62,17 +62,7 @@ public class AuthController {
         }
 
         // 🔒 Organization approval check
-        if ("ORGANIZATION".equalsIgnoreCase(user.getRole())) {
 
-            Organization org = organizationRepository.findByUserId(user.getId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Organization profile not found"));
-
-            if (org.getStatus() != OrganizationStatus.APPROVED) {
-                return ResponseEntity.status(403)
-                        .body(Map.of("message", "Organization not approved"));
-            }
-        }
 
         return ResponseEntity.ok(user);
     }

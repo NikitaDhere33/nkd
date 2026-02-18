@@ -11,9 +11,20 @@ import java.time.LocalDateTime;
 public class Organization {
 
     // ===== Primary Key =====
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
+
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;   // 🔥 THIS IS REQUIRED
+
+
+
+
+
+        // getters & setters
+
+
 
     // ===== Basic Info =====
     @Column(nullable = false)
@@ -60,9 +71,7 @@ public class Organization {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // ===== Getters & Setters =====
-    public Long getId() {
-        return id;
-    }
+
 
     public String getName() {
         return name;
