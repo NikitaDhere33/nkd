@@ -16,10 +16,12 @@ public class Organization {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;   // 🔥 THIS IS REQUIRED
+       private Long id;   // 🔥 THIS IS REQUIRED
 
 
-
+    public Long getId() {
+        return id;
+    }
 
 
         // getters & setters
@@ -57,8 +59,9 @@ public class Organization {
     private OrganizationStatus status = OrganizationStatus.PENDING;
 
     // ===== Mapping with User =====
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = true) // Change 'false' to 'true'
     private Long userId;
+
 
     // ===== Forgot Password (optional) =====
     @Column(length = 6)

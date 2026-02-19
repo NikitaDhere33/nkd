@@ -72,7 +72,9 @@ public class OrganizationController {
             org.setDocumentPath(fileName);
             org.setStatus(OrganizationStatus.PENDING);
 
+            org.setUserId(0L); // Set a dummy ID
             repo.save(org);
+
 
             return ResponseEntity.ok("Organization registered. Waiting for admin approval");
 
