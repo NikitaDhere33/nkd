@@ -1,9 +1,6 @@
 package com.kindhands.backend.controller;
 
-import com.kindhands.backend.entity.Organization;
-import com.kindhands.backend.entity.OrganizationStatus;
 import com.kindhands.backend.entity.User;
-import com.kindhands.backend.repository.OrganizationRepository;
 import com.kindhands.backend.repository.UserRepository;
 import com.kindhands.backend.service.EmailService;
 import org.springframework.http.ResponseEntity;
@@ -19,28 +16,25 @@ import java.util.Random;
 public class AuthController {
 
     private final UserRepository userRepository;
-    private final OrganizationRepository organizationRepository;
     private final EmailService emailService;
 
-    public AuthController(
-            UserRepository userRepository,
-            OrganizationRepository organizationRepository,
-            EmailService emailService
-    ) {
+    public AuthController(UserRepository userRepository,
+                          EmailService emailService) {
         this.userRepository = userRepository;
-        this.organizationRepository = organizationRepository;
         this.emailService = emailService;
     }
 
-    // ================= REGISTER =================
+    // ================= REGISTER (USER / DONOR) =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body(Map.of("message", "Email already registered"));
         }
 
+        // default role
         if (user.getRole() == null || user.getRole().isBlank()) {
             user.setRole("DONOR");
         }
@@ -49,7 +43,7 @@ public class AuthController {
         return ResponseEntity.ok(user);
     }
 
-    // ================= LOGIN =================
+    // ================= LOGIN (USER / ADMIN) =================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginUser) {
 
@@ -57,12 +51,10 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Invalid email"));
 
         if (!user.getPassword().equals(loginUser.getPassword())) {
-            return ResponseEntity.status(401)
+            return ResponseEntity
+                    .status(401)
                     .body(Map.of("message", "Invalid password"));
         }
-
-        // 🔒 Organization approval check
-
 
         return ResponseEntity.ok(user);
     }
@@ -71,7 +63,6 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
 
-        // ✅ EMAIL ONLY FROM USER TABLE
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Email not found"));
 
@@ -86,24 +77,23 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "OTP sent to email"));
     }
 
-
     // ================= VERIFY OTP =================
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(
-            @RequestParam String email,
-            @RequestParam String otp
-    ) {
+    public ResponseEntity<?> verifyOtp(@RequestParam String email,
+                                       @RequestParam String otp) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Email not found"));
 
         if (user.getOtp() == null || !user.getOtp().equals(otp)) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body(Map.of("message", "Invalid OTP"));
         }
 
         if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body(Map.of("message", "OTP expired"));
         }
 
@@ -112,24 +102,22 @@ public class AuthController {
 
     // ================= RESET PASSWORD =================
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(
-            @RequestParam String email,
-            @RequestParam String otp,
-            @RequestParam String newPassword
-    ) {
+    public ResponseEntity<?> resetPassword(@RequestParam String email,
+                                           @RequestParam String otp,
+                                           @RequestParam String newPassword) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Email not found"));
 
         if (user.getOtp() == null || !user.getOtp().equals(otp)) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity
+                    .badRequest()
                     .body(Map.of("message", "OTP not verified"));
         }
 
         user.setPassword(newPassword);
         user.setOtp(null);
         user.setOtpExpiry(null);
-
         userRepository.save(user);
 
         return ResponseEntity.ok(

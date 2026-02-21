@@ -21,9 +21,8 @@ public class Organization {
 
     public Long getId() {
         return id;
+
     }
-
-
         // getters & setters
 
 
@@ -59,8 +58,7 @@ public class Organization {
     private OrganizationStatus status = OrganizationStatus.PENDING;
 
     // ===== Mapping with User =====
-    @Column(name = "user_id", nullable = true) // Change 'false' to 'true'
-    private Long userId;
+
 
 
     // ===== Forgot Password (optional) =====
@@ -140,13 +138,7 @@ public class Organization {
         this.status = status;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
     public String getEmail() {
         return email;
     }

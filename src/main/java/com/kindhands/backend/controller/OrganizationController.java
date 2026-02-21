@@ -30,7 +30,6 @@ public class OrganizationController {
     }
 
     // ================= REGISTER =================
-    // ================= REGISTER =================
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(
             @RequestParam String name,
@@ -43,24 +42,24 @@ public class OrganizationController {
             @RequestParam("document") MultipartFile document
     ) {
         try {
-            // 🔒 Duplicate email
+            // Duplicate email
             if (repo.findByEmail(email).isPresent()) {
                 return ResponseEntity.badRequest().body("Email already registered");
             }
 
-            // 🔒 Duplicate contact
+            // Duplicate contact
             if (repo.findByContact(contact).isPresent()) {
                 return ResponseEntity.badRequest().body("Contact already registered");
             }
 
-            // 📁 Upload document
+            // Upload document
             File dir = new File(UPLOAD_DIR);
             if (!dir.exists()) dir.mkdirs();
 
             String fileName = System.currentTimeMillis() + "_" + document.getOriginalFilename();
             document.transferTo(new File(dir, fileName));
 
-            // 🏢 Save organization
+            // Save organization
             Organization org = new Organization();
             org.setName(name);
             org.setEmail(email);
@@ -72,9 +71,7 @@ public class OrganizationController {
             org.setDocumentPath(fileName);
             org.setStatus(OrganizationStatus.PENDING);
 
-            org.setUserId(0L); // Set a dummy ID
             repo.save(org);
-
 
             return ResponseEntity.ok("Organization registered. Waiting for admin approval");
 
@@ -85,7 +82,6 @@ public class OrganizationController {
                     .body("Organization registration failed");
         }
     }
-
 
     // ================= LOGIN =================
     @PostMapping("/login")
@@ -124,8 +120,10 @@ public class OrganizationController {
     public ResponseEntity<?> approve(@PathVariable Long id) {
         Organization org = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
+
         org.setStatus(OrganizationStatus.APPROVED);
         repo.save(org);
+
         return ResponseEntity.ok("Organization approved");
     }
 
@@ -133,8 +131,10 @@ public class OrganizationController {
     public ResponseEntity<?> reject(@PathVariable Long id) {
         Organization org = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
+
         org.setStatus(OrganizationStatus.REJECTED);
         repo.save(org);
+
         return ResponseEntity.ok("Organization rejected");
     }
 
