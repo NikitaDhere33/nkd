@@ -41,6 +41,10 @@ public class User {
     // DONOR / ORGANIZATION / ADMIN
     @Column(nullable = false)
     private String role;
+    private boolean isPublic = true;
+
+    public boolean isPublic() { return isPublic; }
+    public void setPublic(boolean aPublic) { isPublic = aPublic; }
 
     // ================= OTP (FORGOT PASSWORD) =================
     @Column(length = 6)

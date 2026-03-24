@@ -17,7 +17,7 @@ public class Request {
     private String pincode;
     private String contactNumber;
     private String email;
-
+    private boolean isPublic = true; // Default ला true ठेवा किंवा डोनरच्या चॉइसनुसार अपडेट करा
     // Extra criteria
     private Integer minAge;   // for oldage/orphanage (nullable)
     private Integer maxAge;   // nullable

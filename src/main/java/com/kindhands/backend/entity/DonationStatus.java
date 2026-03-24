@@ -1,4 +1,4 @@
-package com.kindhands.backend.entity;
+package com.kindhands.backend.entity; // Fix: matches the folder path
 
 public enum DonationStatus {
     REQUESTED,

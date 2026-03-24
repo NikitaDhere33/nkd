@@ -23,4 +23,5 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     //boolean existsByEmail(String email);
     boolean existsByContact(String contact);
 
+    List<Organization> findByStatusAndIsPublicTrue(OrganizationStatus status);
 }

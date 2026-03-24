@@ -8,5 +8,13 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    List<Request> findByStatus(String pending);
+
+
+    List<Request> findByStatus(String status);
+
+
+    List<Request> findByStatusAndIsPublicTrueOrderByIdDesc(String status);
+
+
+    List<Request> findByOrganizationNameAndStatus(String orgName, String status);
 }

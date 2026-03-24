@@ -2,8 +2,7 @@ package com.kindhands.backend.entity;
 
 public enum RequirementStatus {
     OPEN,
-    PENDING,
-    APPROVED,
+    ACCEPTED,  // ही लाईन ॲड करा, ज्यामुळे एरर निघून जाईल
     REJECTED,
-    FULFILLED
+    COMPLETED
 }

@@ -22,30 +22,22 @@ public class DonationService {
         this.donationRepo = donationRepo;
     }
 
-    // ================= ORGANIZATION =================
-
-    // Organization creates donation request
     public DonationRequest createRequest(DonationRequest request) {
-        request.setStatus(RequestStatus.OPEN);
+        request.setStatus(RequestStatus.OPEN); // No more error here!
         request.setCreatedAt(LocalDateTime.now());
         return requestRepo.save(request);
     }
 
-    // ================= DONOR =================
-
-    // Donor views all OPEN requests
     public List<DonationRequest> getOpenRequests() {
-        return requestRepo.findByStatus(RequestStatus.OPEN);
+        return requestRepo.findByStatus(RequestStatus.OPEN); // No more error here!
     }
 
-    // Donor donates for a request
     public Donate donate(Donate donate) {
-
-        // save donation
         donate.setDonatedAt(LocalDateTime.now());
         Donate savedDonation = donationRepo.save(donate);
 
-        // update request status
+        // NOTE: Make sure donate.getOrganizationId() actually
+        // contains the ID of the DonationRequest!
         DonationRequest request = requestRepo
                 .findById(donate.getOrganizationId())
                 .orElseThrow(() -> new RuntimeException("Request not found"));
@@ -57,9 +49,6 @@ public class DonationService {
         return savedDonation;
     }
 
-    // ================= PUBLIC =================
-
-    // Public donation history (only allowed donors)
     public List<Donate> getPublicHistory() {
         return donationRepo.findByPublicHistoryTrue();
     }

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Random;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/users") // टीप: Android मधील ApiService मध्ये हा पाथ चेक करा
 @CrossOrigin(origins = "*")
 public class UserController {
 
@@ -29,6 +29,8 @@ public class UserController {
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body("Email already exists");
         }
+        // नवीन यूजर रजिस्टर होताना डीफॉल्ट प्रायव्हसी 'true' ठेवू शकता
+        user.setPublic(true);
         userRepository.save(user);
         return ResponseEntity.ok("Registered successfully");
     }
@@ -45,10 +47,22 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    // ================= UPDATE PRIVACY (नवीन ॲड केलेले) =================
+    // डोनरने टोगल बटन ऑन/ऑफ केल्यावर हा कॉल होईल
+    @PutMapping("/privacy")
+    public ResponseEntity<?> updatePrivacy(@RequestParam String email, @RequestParam boolean isPublic) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setPublic(isPublic); // User entity मध्ये isPublic फिल्ड असणे आवश्यक आहे
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Privacy updated successfully");
+    }
+
     // ================= FORGOT PASSWORD =================
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -68,19 +82,12 @@ public class UserController {
 
     // ================= VERIFY OTP =================
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(
-            @RequestParam String email,
-            @RequestParam String otp) {
-
+    public ResponseEntity<?> verifyOtp(@RequestParam String email, @RequestParam String otp) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (user.getOtp() == null) {
-            return ResponseEntity.badRequest().body("OTP not generated");
-        }
-
-        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("OTP expired");
+        if (user.getOtp() == null || user.getOtpExpiry().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("OTP invalid or expired");
         }
 
         if (!user.getOtp().equals(otp)) {
@@ -92,11 +99,7 @@ public class UserController {
 
     // ================= RESET PASSWORD =================
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(
-            @RequestParam String email,
-            @RequestParam String otp,
-            @RequestParam String newPassword) {
-
+    public ResponseEntity<?> resetPassword(@RequestParam String email, @RequestParam String otp, @RequestParam String newPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

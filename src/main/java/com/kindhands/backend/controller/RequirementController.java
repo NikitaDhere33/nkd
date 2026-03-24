@@ -1,53 +1,34 @@
 package com.kindhands.backend.controller;
 
 import com.kindhands.backend.entity.Requirement;
-import com.kindhands.backend.entity.RequirementStatus;
-import com.kindhands.backend.repository.RequirementRepository;
-import org.springframework.web.bind.annotation.*;
+import com.kindhands.backend.service.RequirementService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*; // हा सर्व अ‍ॅनोटेशन्स इंपोर्ट करेल
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/requirements")
-@CrossOrigin(origins = "*")
 public class RequirementController {
+    @Autowired private RequirementService requirementService;
 
-    private final RequirementRepository requirementRepository;
-
-    public RequirementController(RequirementRepository requirementRepository) {
-        this.requirementRepository = requirementRepository;
+    // Organization requirement post karel
+    @PostMapping("/create/{orgId}")
+    public ResponseEntity<?> createRequirement(@RequestBody Requirement req, @PathVariable Long orgId) {
+        return ResponseEntity.ok(requirementService.saveRequirement(req, orgId));
     }
 
-    // ================= CREATE (ORGANIZATION) =================
-    @PostMapping
-    public Requirement create(@RequestBody Requirement requirement) {
-
-        // default values
-        requirement.setStatus(RequirementStatus.PENDING);
-        requirement.setCreatedAt(LocalDateTime.now());
-
-        return requirementRepository.save(requirement);
+    // Donor la saglya active requirements distil
+    @GetMapping("/all-active")
+    public List<Requirement> getActiveRequirements() {
+        return requirementService.getActiveRequirements();
     }
 
-    // ================= ADMIN =================
-    // admin ला सगळ्या requirements दिसतील
-    @GetMapping
-    public List<Requirement> getAll() {
-        return requirementRepository.findAll();
-    }
-
-    // ================= DONOR =================
-    // donor ला फक्त APPROVED requirements
-    @GetMapping("/donor/approved")
-    public List<Requirement> donorApprovedRequirements() {
-        return requirementRepository.findByStatus(RequirementStatus.APPROVED);
-    }
-
-    // ================= ORGANIZATION =================
-    // specific organization चे requirements
-    @GetMapping("/organization/{orgId}")
-    public List<Requirement> byOrganization(@PathVariable Long orgId) {
-        return requirementRepository.findByOrganizationId(orgId);
+    // Donor requirement accept karel ani email jail
+    @PutMapping("/{reqId}/accept/{donorId}")
+    public ResponseEntity<?> acceptRequirement(@PathVariable Long reqId, @PathVariable Long donorId) {
+        requirementService.acceptAndNotify(reqId, donorId);
+        return ResponseEntity.ok("Requirement accepted. Email sent to organization.");
     }
 }
